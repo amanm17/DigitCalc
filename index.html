@@ -59,10 +59,22 @@
     }
 
     .app {
-      max-width: 820px;
+      max-width: 980px;
       margin: 0 auto;
       display: grid;
-      gap: 18px;
+      gap: 14px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
     }
 
     .card {
@@ -70,7 +82,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: 14px;
       transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
@@ -119,9 +131,9 @@
     .theme-toggle:active { transform: translateY(0); }
 
     .live-result {
-      min-width: 230px;
+      min-width: 190px;
       text-align: right;
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-radius: 18px;
       background: var(--result-bg);
       color: var(--result-text);
@@ -144,15 +156,15 @@
     .ops {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
 
     .op-btn, .digit-btn, .action-btn {
       border: 1px solid var(--border);
       background: var(--card);
       color: var(--text);
-      border-radius: 18px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 14px;
       cursor: pointer;
       transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       font-weight: 700;
@@ -233,12 +245,12 @@
     .digit-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 10px;
     }
 
     .digit-btn {
-      min-height: 78px;
-      font-size: 2rem;
+      min-height: 64px;
+      font-size: 1.7rem;
       font-weight: 800;
     }
 
@@ -333,11 +345,130 @@
       color: var(--text);
     }
 
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 720px) {
-      .ops, .digit-grid { grid-template-columns: repeat(2, 1fr); }
-      .hero-actions { width: 100%; justify-content: space-between; }
-      .live-result { width: 100%; text-align: left; }
-      .digit-btn { min-height: 72px; }
+      body {
+        padding: 10px;
+      }
+
+      .app {
+        gap: 10px;
+      }
+
+      .main-grid,
+      .stack {
+        gap: 10px;
+      }
+
+      .card {
+        padding: 12px;
+        border-radius: 18px;
+      }
+
+      .hero {
+        gap: 10px;
+      }
+
+      .hero-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .live-result {
+        width: 100%;
+        min-width: 0;
+        text-align: left;
+      }
+
+      .ops {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .op-btn {
+        padding: 10px 6px;
+        border-radius: 14px;
+      }
+
+      .op-symbol {
+        font-size: 1.2rem;
+        margin-bottom: 2px;
+      }
+
+      .op-name {
+        font-size: 0.74rem;
+      }
+
+      .toolbar {
+        gap: 8px;
+      }
+
+      .toolbar-left,
+      .toolbar-right {
+        gap: 8px;
+      }
+
+      .action-btn,
+      .theme-toggle {
+        min-height: 44px;
+        padding: 10px 12px;
+        font-size: 0.92rem;
+      }
+
+      .expression-box {
+        min-height: 68px;
+        padding: 10px;
+        gap: 8px;
+      }
+
+      .token {
+        min-width: 46px;
+        min-height: 46px;
+        padding: 8px 10px;
+        font-size: 1.3rem;
+        border-radius: 12px;
+      }
+
+      .token.hint {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+      }
+
+      .digit-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+      }
+
+      .digit-btn {
+        min-height: 54px;
+        font-size: 1.35rem;
+        padding: 8px;
+        border-radius: 14px;
+      }
+
+      .history-item {
+        padding: 10px 12px;
+        border-radius: 14px;
+      }
+
+      .history-expression {
+        font-size: 0.92rem;
+      }
+
+      .history-result {
+        font-size: 0.98rem;
+      }
+
+      .note {
+        font-size: 0.86rem;
+      }
     }
   </style>
 </head>
@@ -357,55 +488,61 @@
       </div>
     </section>
 
-    <section class="card">
-      <div class="meta" style="margin-bottom: 12px; font-weight: 700;">1. Choose function</div>
-      <div class="ops" id="ops"></div>
-    </section>
+    <div class="main-grid">
+      <div class="stack">
+        <section class="card">
+          <div class="meta" style="margin-bottom: 10px; font-weight: 700;">1. Choose function</div>
+          <div class="ops" id="ops"></div>
+        </section>
 
-    <section class="card">
-      <div class="toolbar" style="margin-bottom: 12px;">
-        <div class="toolbar-left">
-          <div class="meta" style="font-weight: 700;">2. Enter numbers</div>
-          <div class="meta" id="modeLabel">Mode: Add</div>
-        </div>
-        <div class="toolbar-right">
-          <button class="action-btn" id="backspaceBtn">Backspace</button>
-          <button class="action-btn danger" id="clearBtn">Clear all</button>
-        </div>
+        <section class="card">
+          <div class="toolbar" style="margin-bottom: 10px;">
+            <div class="toolbar-left">
+              <div class="meta" style="font-weight: 700;">2. Enter numbers</div>
+              <div class="meta" id="modeLabel">Mode: Add</div>
+            </div>
+            <div class="toolbar-right">
+              <button class="action-btn" id="backspaceBtn">Backspace</button>
+              <button class="action-btn danger" id="clearBtn">Clear all</button>
+            </div>
+          </div>
+
+          <div class="expression-box" id="expressionBox">
+            <span class="placeholder">No numbers yet. Tap any digit below.</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="toolbar" style="margin-bottom: 10px;">
+            <div class="toolbar-left">
+              <div class="meta" style="font-weight: 700;">3. Tap digits</div>
+              <div class="meta" id="editHint">Tap a number in the row above to edit it.</div>
+            </div>
+            <div class="toolbar-right">
+              <button class="action-btn primary" id="doneEditingBtn">Done editing</button>
+            </div>
+          </div>
+          <div class="digit-grid" id="digitGrid"></div>
+        </section>
       </div>
 
-      <div class="expression-box" id="expressionBox">
-        <span class="placeholder">No numbers yet. Tap any digit below.</span>
+      <div class="stack">
+        <section class="card">
+          <div class="toolbar" style="margin-bottom: 10px;">
+            <div class="toolbar-left">
+              <div class="meta" style="font-weight: 700;">Recent history</div>
+              <div class="meta">Stores your last 8 completed calculations.</div>
+            </div>
+          </div>
+          <div id="historyList" class="history-list">
+            <div class="placeholder">No saved calculations yet.</div>
+          </div>
+        </section>
       </div>
-    </section>
-
-    <section class="card">
-      <div class="toolbar" style="margin-bottom: 12px;">
-        <div class="toolbar-left">
-          <div class="meta" style="font-weight: 700;">3. Tap digits</div>
-          <div class="meta" id="editHint">Tap a number in the row above to edit it.</div>
-        </div>
-        <div class="toolbar-right">
-          <button class="action-btn primary" id="doneEditingBtn">Done editing</button>
-        </div>
-      </div>
-      <div class="digit-grid" id="digitGrid"></div>
-    </section>
-
-    <section class="card">
-      <div class="toolbar" style="margin-bottom: 12px;">
-        <div class="toolbar-left">
-          <div class="meta" style="font-weight: 700;">Recent history</div>
-          <div class="meta">Stores your last 8 completed calculations.</div>
-        </div>
-      </div>
-      <div id="historyList" class="history-list">
-        <div class="placeholder">No saved calculations yet.</div>
-      </div>
-    </section>
+    </div>
 
     <section class="card note">
-      Rules: subtraction and division are processed from left to right. Example: 10 ÷ 2 ÷ 5 = 1. Division by 0 is blocked. Keyboard shortcuts: <span class="kbd">0-9</span> for digits, <span class="kbd">t</span> for 10, <span class="kbd">+</span> add, <span class="kbd">-</span> subtract, <span class="kbd">*</span> multiply, <span class="kbd">/</span> divide, <span class="kbd">Backspace</span> delete, <span class="kbd">Enter</span> save to history, <span class="kbd">Esc</span> clear editing, <span class="kbd">d</span> toggle theme.
+      Rules: subtraction and division are processed from left to right. Example: 10 ÷ 2 ÷ 5 = 1. Division by 0 is blocked. Keyboard shortcuts: <span class="kbd">0-9</span> for digits, <span class="kbd">.</span> for 0.5, <span class="kbd">t</span> for 10, <span class="kbd">+</span> add, <span class="kbd">-</span> subtract, <span class="kbd">*</span> multiply, <span class="kbd">/</span> divide, <span class="kbd">Backspace</span> delete, <span class="kbd">Enter</span> save to history, <span class="kbd">Esc</span> clear editing, <span class="kbd">d</span> toggle theme.
     </section>
   </div>
 
@@ -417,7 +554,7 @@
       { key: 'divide', label: 'Divide', symbol: '÷' }
     ];
 
-    const digits = Array.from({ length: 11 }, (_, i) => i);
+    const digits = [0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
     let selectedOperation = 'add';
     let values = [];
@@ -670,6 +807,12 @@
       if (/^[0-9]$/.test(key)) {
         event.preventDefault();
         handleNumberInput(Number(key), true);
+        return;
+      }
+
+      if (key === '.') {
+        event.preventDefault();
+        handleNumberInput(0.5, true);
         return;
       }
 
