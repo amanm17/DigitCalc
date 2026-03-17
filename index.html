@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DigitCalc</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #111827;
+      --accent-soft: #eef2ff;
+      --danger: #b91c1c;
+      --shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
+      --radius: 22px;
+      --soft-surface: #fbfdff;
+      --dashed-border: #cbd5e1;
+      --result-bg: #111827;
+      --result-text: #ffffff;
+      --selected-bg: #eef2ff;
+      --selected-border: #111827;
+    }
+
+    body.dark {
+      --bg: #0b1220;
+      --card: #111827;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+      --border: #253046;
+      --accent: #f3f4f6;
+      --accent-soft: #172033;
+      --danger: #f87171;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+      --soft-surface: #0f172a;
+      --dashed-border: #334155;
+      --result-bg: #020617;
+      --result-text: #f8fafc;
+      --selected-bg: #172033;
+      --selected-border: #f3f4f6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    body.dark {
+      background: linear-gradient(180deg, #08101d 0%, #0f172a 100%);
+    }
+
+    .app {
+      max-width: 820px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .theme-toggle {
+      min-height: 52px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 700;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .theme-toggle:hover { transform: translateY(-1px); }
+    .theme-toggle:active { transform: translateY(0); }
+
+    .live-result {
+      min-width: 230px;
+      text-align: right;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: var(--result-bg);
+      color: var(--result-text);
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .live-result .label {
+      font-size: 0.82rem;
+      opacity: 0.75;
+      margin-bottom: 6px;
+    }
+
+    .live-result .value {
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      word-break: break-word;
+    }
+
+    .ops {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .op-btn, .digit-btn, .action-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+      font-weight: 700;
+    }
+
+    .op-btn:hover, .digit-btn:hover, .action-btn:hover { transform: translateY(-1px); }
+    .op-btn:active, .digit-btn:active, .action-btn:active { transform: translateY(0); }
+
+    .op-btn.active {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    .op-symbol {
+      display: block;
+      font-size: 1.55rem;
+      margin-bottom: 4px;
+    }
+
+    .op-name {
+      display: block;
+      font-size: 0.92rem;
+      opacity: 0.88;
+    }
+
+    .expression-box {
+      min-height: 88px;
+      border: 1px dashed var(--dashed-border);
+      border-radius: 18px;
+      background: var(--soft-surface);
+      padding: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .placeholder {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .token {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      min-height: 58px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 1.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .token.selected {
+      border-color: var(--selected-border);
+      background: var(--selected-bg);
+      box-shadow: inset 0 0 0 1px var(--selected-border);
+    }
+
+    .token.hint {
+      border-style: dashed;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      min-width: auto;
+      padding: 10px 12px;
+    }
+
+    .digit-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .digit-btn {
+      min-height: 78px;
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toolbar-left, .toolbar-right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .action-btn {
+      min-height: 52px;
+      padding: 12px 16px;
+      font-size: 1rem;
+    }
+
+    .action-btn.primary {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+    }
+
+    .action-btn.danger {
+      color: var(--danger);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--soft-surface);
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .history-item:hover { transform: translateY(-1px); }
+    .history-item:active { transform: translateY(0); }
+
+    .history-expression {
+      font-size: 1rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .history-result {
+      font-size: 1.1rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 8px;
+      background: var(--card);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 720px) {
+      .ops, .digit-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-actions { width: 100%; justify-content: space-between; }
+      .live-result { width: 100%; text-align: left; }
+      .digit-btn { min-height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="card hero">
+      <div>
+        <h1>DigitCalc</h1>
+        <p class="subtitle">Pick an operation once. Then tap numbers from 0 to 10. Edit any entry by selecting it and tapping a replacement number.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙 Dark mode</button>
+        <div class="live-result" aria-live="polite">
+          <div class="label">Current result</div>
+          <div class="value" id="result">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="meta" style="margin-bottom: 12px; font-weight: 700;">1. Choose function</div>
+      <div class="ops" id="ops"></div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar" style="margin-bottom: 12px;">
+        <div class="toolbar-left">
+          <div class="meta" style="font-weight: 700;">2. Enter numbers</div>
+          <div class="meta" id="modeLabel">Mode: Add</div>
+        </div>
+        <div class="toolbar-right">
+          <button class="action-btn" id="backspaceBtn">Backspace</button>
+          <button class="action-btn danger" id="clearBtn">Clear all</button>
+        </div>
+      </div>
+
+      <div class="expression-box" id="expressionBox">
+        <span class="placeholder">No numbers yet. Tap any digit below.</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar" style="margin-bottom: 12px;">
+        <div class="toolbar-left">
+          <div class="meta" style="font-weight: 700;">3. Tap digits</div>
+          <div class="meta" id="editHint">Tap a number in the row above to edit it.</div>
+        </div>
+        <div class="toolbar-right">
+          <button class="action-btn primary" id="doneEditingBtn">Done editing</button>
+        </div>
+      </div>
+      <div class="digit-grid" id="digitGrid"></div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar" style="margin-bottom: 12px;">
+        <div class="toolbar-left">
+          <div class="meta" style="font-weight: 700;">Recent history</div>
+          <div class="meta">Stores your last 8 completed calculations.</div>
+        </div>
+      </div>
+      <div id="historyList" class="history-list">
+        <div class="placeholder">No saved calculations yet.</div>
+      </div>
+    </section>
+
+    <section class="card note">
+      Rules: subtraction and division are processed from left to right. Example: 10 ÷ 2 ÷ 5 = 1. Division by 0 is blocked. Keyboard shortcuts: <span class="kbd">0-9</span> for digits, <span class="kbd">t</span> for 10, <span class="kbd">+</span> add, <span class="kbd">-</span> subtract, <span class="kbd">*</span> multiply, <span class="kbd">/</span> divide, <span class="kbd">Backspace</span> delete, <span class="kbd">Enter</span> save to history, <span class="kbd">Esc</span> clear editing, <span class="kbd">d</span> toggle theme.
+    </section>
+  </div>
+
+  <script>
+    const operations = [
+      { key: 'add', label: 'Add', symbol: '+' },
+      { key: 'subtract', label: 'Subtract', symbol: '−' },
+      { key: 'multiply', label: 'Multiply', symbol: '×' },
+      { key: 'divide', label: 'Divide', symbol: '÷' }
+    ];
+
+    const digits = Array.from({ length: 11 }, (_, i) => i);
+
+    let selectedOperation = 'add';
+    let values = [];
+    let selectedIndex = null;
+    let history = [];
+
+    const opsEl = document.getElementById('ops');
+    const digitGridEl = document.getElementById('digitGrid');
+    const expressionBoxEl = document.getElementById('expressionBox');
+    const resultEl = document.getElementById('result');
+    const modeLabelEl = document.getElementById('modeLabel');
+    const editHintEl = document.getElementById('editHint');
+    const clearBtn = document.getElementById('clearBtn');
+    const backspaceBtn = document.getElementById('backspaceBtn');
+    const doneEditingBtn = document.getElementById('doneEditingBtn');
+    const historyListEl = document.getElementById('historyList');
+    const themeToggleEl = document.getElementById('themeToggle');
+
+    function formatNumber(num) {
+      if (!Number.isFinite(num)) return 'Error';
+      if (Math.abs(num) >= 1e12) return num.toExponential(6);
+      if (Number.isInteger(num)) return String(num);
+      return Number(num.toFixed(8)).toString();
+    }
+
+    function calculateResult() {
+      if (values.length === 0) return 0;
+
+      switch (selectedOperation) {
+        case 'add':
+          return values.reduce((a, b) => a + b, 0);
+        case 'subtract':
+          return values.slice(1).reduce((a, b) => a - b, values[0]);
+        case 'multiply':
+          return values.reduce((a, b) => a * b, 1);
+        case 'divide': {
+          let current = values[0];
+          for (let i = 1; i < values.length; i += 1) {
+            if (values[i] === 0) return Infinity;
+            current /= values[i];
+          }
+          return current;
+        }
+        default:
+          return 0;
+      }
+    }
+
+    function getOperatorSymbol() {
+      return operations.find(op => op.key === selectedOperation)?.symbol || '+';
+    }
+
+    function buildExpressionText(operationKey, arr) {
+      const symbol = operations.find(op => op.key === operationKey)?.symbol || '+';
+      return arr.length ? arr.join(` ${symbol} `) : '';
+    }
+
+    function applyTheme(theme) {
+      const dark = theme === 'dark';
+      document.body.classList.toggle('dark', dark);
+      themeToggleEl.textContent = dark ? '☀️ Light mode' : '🌙 Dark mode';
+      localStorage.setItem('digitcalc-theme', dark ? 'dark' : 'light');
+    }
+
+    function saveToHistory() {
+      if (!values.length) return;
+      const result = calculateResult();
+      const safeResult = result === Infinity ? 'Cannot divide by 0' : formatNumber(result);
+      const expression = buildExpressionText(selectedOperation, values);
+      if (!expression) return;
+
+      history.unshift({
+        operation: selectedOperation,
+        expression,
+        result: safeResult,
+        values: [...values]
+      });
+      history = history.slice(0, 8);
+    }
+
+    function renderHistory() {
+      historyListEl.innerHTML = '';
+      if (!history.length) {
+        historyListEl.innerHTML = '<div class="placeholder">No saved calculations yet.</div>';
+        return;
+      }
+
+      history.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        row.innerHTML = `
+          <div class="history-expression">${item.expression}</div>
+          <div class="history-result">= ${item.result}</div>
+        `;
+        row.addEventListener('click', () => {
+          selectedOperation = item.operation;
+          values = [...item.values];
+          selectedIndex = null;
+          editHintEl.textContent = 'Loaded from history. Tap a number above to edit it.';
+          renderAll();
+        });
+        historyListEl.appendChild(row);
+      });
+    }
+
+    function renderOperations() {
+      opsEl.innerHTML = '';
+      operations.forEach(op => {
+        const btn = document.createElement('button');
+        btn.className = `op-btn ${selectedOperation === op.key ? 'active' : ''}`;
+        btn.innerHTML = `<span class="op-symbol">${op.symbol}</span><span class="op-name">${op.label}</span>`;
+        btn.addEventListener('click', () => {
+          selectedOperation = op.key;
+          renderAll();
+        });
+        opsEl.appendChild(btn);
+      });
+    }
+
+    function renderDigits() {
+      digitGridEl.innerHTML = '';
+      digits.forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = 'digit-btn';
+        btn.textContent = num;
+        btn.addEventListener('click', () => handleNumberInput(num, false));
+        digitGridEl.appendChild(btn);
+      });
+    }
+
+    function renderExpression() {
+      expressionBoxEl.innerHTML = '';
+
+      if (values.length === 0) {
+        expressionBoxEl.innerHTML = '<span class="placeholder">No numbers yet. Tap any digit below.</span>';
+        return;
+      }
+
+      values.forEach((value, index) => {
+        const token = document.createElement('button');
+        token.className = `token ${selectedIndex === index ? 'selected' : ''}`;
+        token.textContent = value;
+        token.title = 'Click to edit';
+        token.addEventListener('click', () => {
+          selectedIndex = selectedIndex === index ? null : index;
+          editHintEl.textContent = selectedIndex === null
+            ? 'Tap a number in the row above to edit it.'
+            : `Editing position ${index + 1}. Tap a replacement number below.`;
+          renderAll();
+        });
+        expressionBoxEl.appendChild(token);
+
+        if (index < values.length - 1) {
+          const sep = document.createElement('span');
+          sep.className = 'token hint';
+          sep.textContent = getOperatorSymbol();
+          expressionBoxEl.appendChild(sep);
+        }
+      });
+    }
+
+    function renderResult() {
+      const result = calculateResult();
+      resultEl.textContent = result === Infinity ? 'Cannot divide by 0' : formatNumber(result);
+    }
+
+    function renderMeta() {
+      const activeLabel = operations.find(op => op.key === selectedOperation)?.label || 'Add';
+      modeLabelEl.textContent = `Mode: ${activeLabel}`;
+    }
+
+    function renderAll() {
+      renderOperations();
+      renderDigits();
+      renderExpression();
+      renderResult();
+      renderMeta();
+      renderHistory();
+    }
+
+    function handleNumberInput(num, fromKeyboard) {
+      if (selectedIndex !== null) {
+        if (selectedOperation === 'divide' && selectedIndex > 0 && num === 0) {
+          editHintEl.textContent = 'Division by 0 is not allowed here.';
+          renderAll();
+          return;
+        }
+        values[selectedIndex] = num;
+        selectedIndex = null;
+        editHintEl.textContent = fromKeyboard ? `Updated to ${num} from keyboard.` : 'Updated. Tap a number in the row above to edit another one.';
+      } else {
+        if (selectedOperation === 'divide' && values.length > 0 && num === 0) {
+          editHintEl.textContent = 'Division by 0 is not allowed.';
+          renderAll();
+          return;
+        }
+        values.push(num);
+        editHintEl.textContent = fromKeyboard ? `${num} added from keyboard.` : 'Tap a number in the row above to edit it.';
+      }
+      renderAll();
+    }
+
+    backspaceBtn.addEventListener('click', () => {
+      if (selectedIndex !== null) {
+        values.splice(selectedIndex, 1);
+        selectedIndex = null;
+        editHintEl.textContent = 'Selected entry removed.';
+      } else {
+        values.pop();
+        editHintEl.textContent = 'Last entry removed.';
+      }
+      renderAll();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      values = [];
+      selectedIndex = null;
+      editHintEl.textContent = 'Cleared. Tap any digit below.';
+      renderAll();
+    });
+
+    doneEditingBtn.addEventListener('click', () => {
+      selectedIndex = null;
+      editHintEl.textContent = 'Tap a number in the row above to edit it.';
+      renderAll();
+    });
+
+    themeToggleEl.addEventListener('click', () => {
+      const isDark = document.body.classList.contains('dark');
+      applyTheme(isDark ? 'light' : 'dark');
+    });
+
+    const savedTheme = localStorage.getItem('digitcalc-theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+    document.addEventListener('keydown', (event) => {
+      const key = event.key;
+
+      if (key.toLowerCase() === 'd' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        const tag = document.activeElement?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+          event.preventDefault();
+          const isDark = document.body.classList.contains('dark');
+          applyTheme(isDark ? 'light' : 'dark');
+          return;
+        }
+      }
+
+      if (/^[0-9]$/.test(key)) {
+        event.preventDefault();
+        handleNumberInput(Number(key), true);
+        return;
+      }
+
+      if (key.toLowerCase() === 't') {
+        event.preventDefault();
+        handleNumberInput(10, true);
+        return;
+      }
+
+      if (key === '+') {
+        event.preventDefault();
+        selectedOperation = 'add';
+        renderAll();
+        return;
+      }
+
+      if (key === '-') {
+        event.preventDefault();
+        selectedOperation = 'subtract';
+        renderAll();
+        return;
+      }
+
+      if (key === '*') {
+        event.preventDefault();
+        selectedOperation = 'multiply';
+        renderAll();
+        return;
+      }
+
+      if (key === '/') {
+        event.preventDefault();
+        selectedOperation = 'divide';
+        renderAll();
+        return;
+      }
+
+      if (key === 'Backspace') {
+        event.preventDefault();
+        if (selectedIndex !== null) {
+          values.splice(selectedIndex, 1);
+          selectedIndex = null;
+          editHintEl.textContent = 'Selected entry removed.';
+        } else {
+          values.pop();
+          editHintEl.textContent = 'Last entry removed.';
+        }
+        renderAll();
+        return;
+      }
+
+      if (key === 'Enter') {
+        event.preventDefault();
+        saveToHistory();
+        editHintEl.textContent = values.length ? 'Calculation saved to history.' : 'Nothing to save yet.';
+        renderAll();
+        return;
+      }
+
+      if (key === 'Escape') {
+        event.preventDefault();
+        selectedIndex = null;
+        editHintEl.textContent = 'Editing cleared.';
+        renderAll();
+      }
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
