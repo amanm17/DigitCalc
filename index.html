@@ -14,6 +14,7 @@
       --accent: #111827;
       --accent-soft: #eef2ff;
       --danger: #b91c1c;
+      --success: #166534;
       --shadow: 0 10px 30px rgba(17, 24, 39, 0.08);
       --radius: 22px;
       --soft-surface: #fbfdff;
@@ -33,6 +34,7 @@
       --accent: #f3f4f6;
       --accent-soft: #172033;
       --danger: #f87171;
+      --success: #4ade80;
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
       --soft-surface: #0f172a;
       --dashed-border: #334155;
@@ -250,8 +252,24 @@
 
     .digit-btn {
       min-height: 64px;
-      font-size: 1.7rem;
+      font-size: 1.45rem;
       font-weight: 800;
+      display: grid;
+      gap: 4px;
+      justify-items: center;
+      align-content: center;
+      text-align: center;
+      line-height: 1.05;
+    }
+
+    .digit-btn .digit-key {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .digit-btn.custom {
+      border-style: dashed;
     }
 
     .toolbar {
@@ -345,6 +363,102 @@
       color: var(--text);
     }
 
+    .add-tile-form {
+      display: grid;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    .tile-help,
+    .tile-status {
+      font-size: 0.9rem;
+    }
+
+    .tile-help {
+      color: var(--muted);
+    }
+
+    .tile-status {
+      min-height: 1.2rem;
+      color: var(--success);
+      font-weight: 700;
+    }
+
+    .tile-status.error {
+      color: var(--danger);
+    }
+
+    .custom-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .custom-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: var(--soft-surface);
+    }
+
+    .custom-chip-text {
+      font-size: 0.92rem;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .remove-chip-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--danger);
+      border-radius: 10px;
+      min-height: 38px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+    }
+
     @media (max-width: 900px) {
       .main-grid {
         grid-template-columns: 1fr;
@@ -416,7 +530,8 @@
       }
 
       .action-btn,
-      .theme-toggle {
+      .theme-toggle,
+      .remove-chip-btn {
         min-height: 44px;
         padding: 10px 12px;
         font-size: 0.92rem;
@@ -447,13 +562,18 @@
       }
 
       .digit-btn {
-        min-height: 54px;
-        font-size: 1.35rem;
+        min-height: 58px;
+        font-size: 1.15rem;
         padding: 8px;
         border-radius: 14px;
       }
 
-      .history-item {
+      .digit-btn .digit-key {
+        font-size: 0.66rem;
+      }
+
+      .history-item,
+      .custom-chip {
         padding: 10px 12px;
         border-radius: 14px;
       }
@@ -469,6 +589,10 @@
       .note {
         font-size: 0.86rem;
       }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -477,7 +601,7 @@
     <section class="card hero">
       <div>
         <h1>DigitCalc</h1>
-        <p class="subtitle">Pick an operation once. Then tap numbers from 0 to 10. Edit any entry by selecting it and tapping a replacement number.</p>
+        <p class="subtitle">Pick an operation once. Then tap numbers. Edit any entry by selecting it and tapping a replacement number.</p>
       </div>
       <div class="hero-actions">
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">🌙 Dark mode</button>
@@ -508,7 +632,7 @@
           </div>
 
           <div class="expression-box" id="expressionBox">
-            <span class="placeholder">No numbers yet. Tap any digit below.</span>
+            <span class="placeholder">No numbers yet. Tap any tile below.</span>
           </div>
         </section>
 
@@ -523,6 +647,44 @@
             </div>
           </div>
           <div class="digit-grid" id="digitGrid"></div>
+        </section>
+
+        <section class="card">
+          <div class="toolbar" style="margin-bottom: 10px;">
+            <div class="toolbar-left">
+              <div class="meta" style="font-weight: 700;">4. Add your own tile</div>
+              <div class="meta">Create a value like 0.25 and assign any unused keyboard key.</div>
+            </div>
+          </div>
+
+          <div class="add-tile-form">
+            <div class="form-grid">
+              <div class="field">
+                <label for="customValueInput">Tile value</label>
+                <input id="customValueInput" type="number" step="0.01" placeholder="Example: 0.25" />
+              </div>
+              <div class="field">
+                <label for="customKeySelect">Keyboard key</label>
+                <select id="customKeySelect"></select>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="tile-help" id="tileHelp">Pick a number and an unused key. Built-in keys cannot be reassigned.</div>
+              <div class="toolbar-right">
+                <button class="action-btn primary" id="addTileBtn">Add tile</button>
+              </div>
+            </div>
+
+            <div class="tile-status" id="tileStatus"></div>
+
+            <div>
+              <div class="meta" style="font-weight: 700; margin-bottom: 8px;">Custom tiles</div>
+              <div class="custom-list" id="customTileList">
+                <div class="placeholder">No custom tiles yet.</div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -542,7 +704,7 @@
     </div>
 
     <section class="card note">
-      Rules: subtraction and division are processed from left to right. Example: 10 ÷ 2 ÷ 5 = 1. Division by 0 is blocked. Keyboard shortcuts: <span class="kbd">0-9</span> for digits, <span class="kbd">.</span> for 0.5, <span class="kbd">t</span> for 10, <span class="kbd">+</span> add, <span class="kbd">-</span> subtract, <span class="kbd">*</span> multiply, <span class="kbd">/</span> divide, <span class="kbd">Backspace</span> delete, <span class="kbd">Enter</span> save to history, <span class="kbd">Esc</span> clear editing, <span class="kbd">d</span> toggle theme.
+      Rules: subtraction and division are processed from left to right. Example: 10 ÷ 2 ÷ 5 = 1. Division by 0 is blocked. Built-in keyboard shortcuts: <span class="kbd">0-9</span> for digits, <span class="kbd">.</span> for 0.5, <span class="kbd">t</span> for 10, <span class="kbd">+</span> add, <span class="kbd">-</span> subtract, <span class="kbd">*</span> multiply, <span class="kbd">/</span> divide, <span class="kbd">Backspace</span> delete, <span class="kbd">Enter</span> save to history, <span class="kbd">Esc</span> clear editing, <span class="kbd">d</span> toggle theme. Custom tiles also show their assigned key directly on the tile.
     </section>
   </div>
 
@@ -554,8 +716,29 @@
       { key: 'divide', label: 'Divide', symbol: '÷' }
     ];
 
-    const digits = [0, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const builtInTiles = [
+      { value: 0, key: '0', builtIn: true },
+      { value: 0.5, key: '.', builtIn: true },
+      { value: 1, key: '1', builtIn: true },
+      { value: 2, key: '2', builtIn: true },
+      { value: 3, key: '3', builtIn: true },
+      { value: 4, key: '4', builtIn: true },
+      { value: 5, key: '5', builtIn: true },
+      { value: 6, key: '6', builtIn: true },
+      { value: 7, key: '7', builtIn: true },
+      { value: 8, key: '8', builtIn: true },
+      { value: 9, key: '9', builtIn: true },
+      { value: 10, key: 't', builtIn: true }
+    ];
 
+    const allowedCustomKeys = [
+      'q','w','e','r','y','u','i','o','p',
+      'a','s','f','g','h','j','k','l',
+      'z','x','c','v','b','n','m',
+      '[',']',';','\'',','
+    ];
+
+    let customTiles = loadCustomTiles();
     let selectedOperation = 'add';
     let values = [];
     let selectedIndex = null;
@@ -572,6 +755,72 @@
     const doneEditingBtn = document.getElementById('doneEditingBtn');
     const historyListEl = document.getElementById('historyList');
     const themeToggleEl = document.getElementById('themeToggle');
+    const customValueInputEl = document.getElementById('customValueInput');
+    const customKeySelectEl = document.getElementById('customKeySelect');
+    const addTileBtnEl = document.getElementById('addTileBtn');
+    const tileStatusEl = document.getElementById('tileStatus');
+    const customTileListEl = document.getElementById('customTileList');
+
+    function loadCustomTiles() {
+      try {
+        const raw = localStorage.getItem('digitcalc-custom-tiles');
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter(tile => typeof tile?.value === 'number' && Number.isFinite(tile.value) && typeof tile?.key === 'string')
+          .map(tile => ({ value: tile.value, key: tile.key.toLowerCase(), builtIn: false }));
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCustomTiles() {
+      localStorage.setItem('digitcalc-custom-tiles', JSON.stringify(customTiles));
+    }
+
+    function getAllTiles() {
+      return [...builtInTiles, ...customTiles];
+    }
+
+    function getUsedKeys() {
+      return new Set(getAllTiles().map(tile => tile.key.toLowerCase()));
+    }
+
+    function getAvailableCustomKeys() {
+      const used = getUsedKeys();
+      return allowedCustomKeys.filter(key => !used.has(key));
+    }
+
+    function populateCustomKeyOptions() {
+      const available = getAvailableCustomKeys();
+      customKeySelectEl.innerHTML = '';
+
+      if (!available.length) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No keys left';
+        customKeySelectEl.appendChild(option);
+        customKeySelectEl.disabled = true;
+        addTileBtnEl.disabled = true;
+        return;
+      }
+
+      customKeySelectEl.disabled = false;
+      addTileBtnEl.disabled = false;
+
+      available.forEach(key => {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = key;
+        customKeySelectEl.appendChild(option);
+      });
+    }
+
+    function setTileStatus(message = '', isError = false) {
+      tileStatusEl.textContent = message;
+      tileStatusEl.classList.toggle('error', isError);
+    }
 
     function formatNumber(num) {
       if (!Number.isFinite(num)) return 'Error';
@@ -676,12 +925,46 @@
 
     function renderDigits() {
       digitGridEl.innerHTML = '';
-      digits.forEach(num => {
+      getAllTiles().forEach(tile => {
         const btn = document.createElement('button');
-        btn.className = 'digit-btn';
-        btn.textContent = num;
-        btn.addEventListener('click', () => handleNumberInput(num, false));
+        btn.className = `digit-btn ${tile.builtIn ? '' : 'custom'}`.trim();
+        btn.innerHTML = `
+          <span>${formatNumber(tile.value)}</span>
+          <span class="digit-key">key: ${tile.key}</span>
+        `;
+        btn.title = `Add ${formatNumber(tile.value)} using key ${tile.key}`;
+        btn.addEventListener('click', () => handleNumberInput(tile.value, false));
         digitGridEl.appendChild(btn);
+      });
+    }
+
+    function renderCustomTileList() {
+      customTileListEl.innerHTML = '';
+      if (!customTiles.length) {
+        customTileListEl.innerHTML = '<div class="placeholder">No custom tiles yet.</div>';
+        return;
+      }
+
+      customTiles.forEach((tile, index) => {
+        const row = document.createElement('div');
+        row.className = 'custom-chip';
+        row.innerHTML = `
+          <div class="custom-chip-text">${formatNumber(tile.value)} on key <span class="kbd">${tile.key}</span></div>
+        `;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-chip-btn';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', () => {
+          customTiles.splice(index, 1);
+          saveCustomTiles();
+          populateCustomKeyOptions();
+          setTileStatus('Custom tile removed.');
+          renderAll();
+        });
+
+        row.appendChild(removeBtn);
+        customTileListEl.appendChild(row);
       });
     }
 
@@ -689,20 +972,20 @@
       expressionBoxEl.innerHTML = '';
 
       if (values.length === 0) {
-        expressionBoxEl.innerHTML = '<span class="placeholder">No numbers yet. Tap any digit below.</span>';
+        expressionBoxEl.innerHTML = '<span class="placeholder">No numbers yet. Tap any tile below.</span>';
         return;
       }
 
       values.forEach((value, index) => {
         const token = document.createElement('button');
         token.className = `token ${selectedIndex === index ? 'selected' : ''}`;
-        token.textContent = value;
+        token.textContent = formatNumber(value);
         token.title = 'Click to edit';
         token.addEventListener('click', () => {
           selectedIndex = selectedIndex === index ? null : index;
           editHintEl.textContent = selectedIndex === null
             ? 'Tap a number in the row above to edit it.'
-            : `Editing position ${index + 1}. Tap a replacement number below.`;
+            : `Editing position ${index + 1}. Tap a replacement tile below.`;
           renderAll();
         });
         expressionBoxEl.appendChild(token);
@@ -729,10 +1012,12 @@
     function renderAll() {
       renderOperations();
       renderDigits();
+      renderCustomTileList();
       renderExpression();
       renderResult();
       renderMeta();
       renderHistory();
+      populateCustomKeyOptions();
     }
 
     function handleNumberInput(num, fromKeyboard) {
@@ -744,7 +1029,7 @@
         }
         values[selectedIndex] = num;
         selectedIndex = null;
-        editHintEl.textContent = fromKeyboard ? `Updated to ${num} from keyboard.` : 'Updated. Tap a number in the row above to edit another one.';
+        editHintEl.textContent = fromKeyboard ? `Updated to ${formatNumber(num)} from keyboard.` : 'Updated. Tap a number in the row above to edit another one.';
       } else {
         if (selectedOperation === 'divide' && values.length > 0 && num === 0) {
           editHintEl.textContent = 'Division by 0 is not allowed.';
@@ -752,8 +1037,49 @@
           return;
         }
         values.push(num);
-        editHintEl.textContent = fromKeyboard ? `${num} added from keyboard.` : 'Tap a number in the row above to edit it.';
+        editHintEl.textContent = fromKeyboard ? `${formatNumber(num)} added from keyboard.` : 'Tap a number in the row above to edit it.';
       }
+      renderAll();
+    }
+
+    function addCustomTile() {
+      const rawValue = customValueInputEl.value.trim();
+      const selectedKey = customKeySelectEl.value.trim().toLowerCase();
+
+      if (!rawValue) {
+        setTileStatus('Enter a tile value first.', true);
+        return;
+      }
+
+      const numericValue = Number(rawValue);
+      if (!Number.isFinite(numericValue)) {
+        setTileStatus('Enter a valid number.', true);
+        return;
+      }
+
+      if (!selectedKey) {
+        setTileStatus('Pick an available keyboard key.', true);
+        return;
+      }
+
+      const usedKeys = getUsedKeys();
+      if (usedKeys.has(selectedKey)) {
+        setTileStatus('That keyboard key is already assigned.', true);
+        renderAll();
+        return;
+      }
+
+      const duplicateValue = customTiles.some(tile => tile.value === numericValue);
+      if (duplicateValue) {
+        setTileStatus('That custom value already exists.', true);
+        return;
+      }
+
+      customTiles.push({ value: numericValue, key: selectedKey, builtIn: false });
+      customTiles.sort((a, b) => a.value - b.value);
+      saveCustomTiles();
+      customValueInputEl.value = '';
+      setTileStatus(`Added tile ${formatNumber(numericValue)} on key ${selectedKey}.`);
       renderAll();
     }
 
@@ -772,7 +1098,7 @@
     clearBtn.addEventListener('click', () => {
       values = [];
       selectedIndex = null;
-      editHintEl.textContent = 'Cleared. Tap any digit below.';
+      editHintEl.textContent = 'Cleared. Tap any tile below.';
       renderAll();
     });
 
@@ -780,6 +1106,22 @@
       selectedIndex = null;
       editHintEl.textContent = 'Tap a number in the row above to edit it.';
       renderAll();
+    });
+
+    addTileBtnEl.addEventListener('click', addCustomTile);
+
+    customValueInputEl.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addCustomTile();
+      }
+    });
+
+    customKeySelectEl.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addCustomTile();
+      }
     });
 
     themeToggleEl.addEventListener('click', () => {
@@ -791,34 +1133,27 @@
     const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
 
+    renderAll();
+
     document.addEventListener('keydown', (event) => {
       const key = event.key;
+      const normalizedKey = key.length === 1 ? key.toLowerCase() : key;
+      const tag = document.activeElement?.tagName;
+      const isTypingField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 
-      if (key.toLowerCase() === 'd' && !event.metaKey && !event.ctrlKey && !event.altKey) {
-        const tag = document.activeElement?.tagName;
-        if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
-          event.preventDefault();
-          const isDark = document.body.classList.contains('dark');
-          applyTheme(isDark ? 'light' : 'dark');
-          return;
-        }
-      }
-
-      if (/^[0-9]$/.test(key)) {
+      if (!isTypingField && normalizedKey === 'd' && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault();
-        handleNumberInput(Number(key), true);
+        const isDark = document.body.classList.contains('dark');
+        applyTheme(isDark ? 'light' : 'dark');
         return;
       }
 
-      if (key === '.') {
-        event.preventDefault();
-        handleNumberInput(0.5, true);
-        return;
-      }
+      if (isTypingField) return;
 
-      if (key.toLowerCase() === 't') {
+      const matchedTile = getAllTiles().find(tile => tile.key === normalizedKey);
+      if (matchedTile) {
         event.preventDefault();
-        handleNumberInput(10, true);
+        handleNumberInput(matchedTile.value, true);
         return;
       }
 
@@ -879,8 +1214,6 @@
         renderAll();
       }
     });
-
-    renderAll();
   </script>
 </body>
 </html>
